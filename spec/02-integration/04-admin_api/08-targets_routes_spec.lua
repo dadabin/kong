@@ -1,5 +1,6 @@
 local helpers = require "spec.helpers"
 local cjson = require "cjson"
+local utils   = require "kong.tools.utils"
 
 local function it_content_types(title, fn)
   local test_form_encoded = fn("application/x-www-form-urlencoded")
@@ -601,6 +602,32 @@ describe("Admin API #" .. strategy, function()
             }
           }))
           assert.same(201, status)
+        end)
+
+        it("returns 404 with invalid upstream", function()
+          local status = assert(client_send {
+            method = "POST",
+            path =  "/upstreams/" .. utils.uuid() .. "/targets/" .. my_target_name .. "/unhealthy"
+          })
+          assert.same(404, status)
+
+          local status = assert(client_send {
+            method = "POST",
+            path =  "/upstreams/" .. utils.uuid() .. "/targets/" .. my_target_name .. "/healthy"
+          })
+          assert.same(404, status)
+
+          local status = assert(client_send {
+            method = "POST",
+            path =  "/upstreams/unknown/targets/" .. my_target_name .. "/unhealthy"
+          })
+          assert.same(404, status)
+
+          local status = assert(client_send {
+            method = "POST",
+            path =  "/upstreams/unknown/targets/" .. my_target_name .. "/healthy"
+          })
+          assert.same(404, status)
         end)
 
         it("flips the target status from UNHEALTHY to HEALTHY", function()
