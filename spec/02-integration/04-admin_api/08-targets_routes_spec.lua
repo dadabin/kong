@@ -630,6 +630,32 @@ describe("Admin API #" .. strategy, function()
           assert.same(404, status)
         end)
 
+        it("returns 404 with invalid target", function()
+          local status = assert(client_send {
+            method = "POST",
+            path =  "/upstreams/" .. upstream.id .. "/targets/" .. utils.uuid() .. "/unhealthy"
+          })
+          assert.same(404, status)
+
+          local status = assert(client_send {
+            method = "POST",
+            path =  "/upstreams/" .. upstream.id .. "/targets/" .. utils.uuid() .. "/healthy"
+          })
+          assert.same(404, status)
+
+          local status = assert(client_send {
+            method = "POST",
+            path =  "/upstreams/" .. upstream.id .. "/targets/unknown/unhealthy"
+          })
+          assert.same(404, status)
+
+          local status = assert(client_send {
+            method = "POST",
+            path =  "/upstreams/" .. upstream.id .. "/targets/unknown/healthy"
+          })
+          assert.same(404, status)
+        end)
+
         it("flips the target status from UNHEALTHY to HEALTHY", function()
           local status, body, json
           status, body = assert(client_send {
